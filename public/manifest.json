@@ -1,0 +1,19 @@
+{
+  "name": "Constitutional Defender",
+  "short_name": "ConstDefender",
+  "description": "Interactive constitutional law simulation and educational platform",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0a0f1c",
+  "theme_color": "#1e40af",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ],
+  "categories": ["education", "productivity"],
+  "lang": "en"
+}
