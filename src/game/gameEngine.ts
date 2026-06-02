@@ -11,7 +11,7 @@ export function calculateVerdict(
   const finalScore = score * 0.6 + accuracy * 0.4;
 
   let type: VerdictResult['type'];
-  let reputationGained = CASE_REWARDS.baseReputation;
+  let reputationGained: number = CASE_REWARDS.baseReputation;
   let message: string;
 
   if (finalScore >= 0.9 && evidenceUsed >= 4) {
@@ -39,7 +39,7 @@ export function calculateVerdict(
   return {
     type,
     score: Math.round(finalScore * 100),
-    reputationGained: Math.max(0, reputationGained),
+    reputationGained,
     message,
     promoted: false,
   };
