@@ -1,39 +1,114 @@
-// Add these imports near the top of src/App.tsx
+// src/App.tsx
 import React, { useState } from 'react';
 import RiveraClientMeeting from './scenes/ClientMeeting/RiveraClientMeeting';
-import { useGameSave } from './hooks/useGameSave';
-import { awardReputation } from './game/gameEngine';
+import { useClientMeetingIntegration } from './hooks/useClientMeetingIntegration';
 
-// Example integration inside your main App component or Hub screen
+// ======================================================
+// CONSTITUTIONAL DEFENDER - MAIN APPLICATION
+// ======================================================
+// This is the root component. All major scenes are controlled here.
+// Add new scenes by following the same pattern used for RiveraClientMeeting.
+// ======================================================
+
 const App: React.FC = () => {
+  // ======================================================
+  // STATE MANAGEMENT
+  // ======================================================
   const [showRiveraMeeting, setShowRiveraMeeting] = useState(false);
-  const { saveGame, loadGame } = useGameSave();
+  
+  // Future scene states (add more as you build)
+  // const [showEvidenceLibrary, setShowEvidenceLibrary] = useState(false);
+  // const [showCourtroom, setShowCourtroom] = useState(false);
 
-  const handleRiveraComplete = (strategy: 'suppression' | 'first_amendment' | 'dual', reputationGain: number) => {
-    awardReputation(reputationGain);
-    saveGame(); // Persist updated reputation and state
-    setShowRiveraMeeting(false);
-    // Navigate to next screen (e.g., Evidence Library or Courtroom)
-    console.log(`Strategy selected: ${strategy} | Reputation gained: ${reputationGain}`);
+  // ======================================================
+  // HOOKS
+  // ======================================================
+  const { handleMeetingComplete } = useClientMeetingIntegration();
+
+  // ======================================================
+  // HANDLERS
+  // ======================================================
+  
+  /**
+   * Called when the player finishes the Rivera Client Meeting.
+   * Awards reputation, saves progress, and navigates to the next phase.
+   */
+  const handleRiveraComplete = (
+    strategy: 'suppression' | 'first_amendment' | 'dual', 
+    repGain: number
+  ) => {
+    handleMeetingComplete(strategy, repGain, () => {
+      // After meeting completes, close the meeting and move to next phase
+      console.log(`Rivera meeting complete. Strategy: ${strategy} | Reputation gained: ${repGain}`);
+      
+      setShowRiveraMeeting(false);
+
+      // TODO: Navigate to next screen (Evidence Library, Courtroom, etc.)
+      // Example:
+      // setShowEvidenceLibrary(true);
+    });
   };
 
+  // ======================================================
+  // RENDER
+  // ======================================================
   return (
     <div className="min-h-screen bg-[#0a0f1c] text-white">
-      {/* Your existing navigation / hub UI */}
-      <button 
-        onClick={() => setShowRiveraMeeting(true)}
-        className="px-6 py-3 bg-blue-600 hover:bg-blue-700 rounded-xl font-semibold transition"
-      >
-        Begin Client Meeting – State v. Rivera
-      </button>
+      
+      {/* 
+        ======================================================
+        MAIN HUB / NAVIGATION
+        Add your main menu, case list, career progress, etc. here.
+        ======================================================
+      */}
+      <div className="max-w-5xl mx-auto p-8">
+        <h1 className="text-4xl font-bold mb-2 tracking-tight">Constitutional Defender</h1>
+        <p className="text-blue-400 mb-8">Phase 3 • Interactive Client Meetings</p>
 
-      {/* Render the scene when triggered */}
+        {/* Main Action Buttons */}
+        <div className="space-y-4">
+          <button 
+            onClick={() => setShowRiveraMeeting(true)}
+            className="w-full md:w-auto px-8 py-4 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 rounded-2xl font-semibold text-lg transition-all shadow-lg"
+          >
+            Begin Client Meeting – State v. Rivera
+          </button>
+
+          {/* Placeholder buttons for future scenes */}
+          <button 
+            disabled
+            className="w-full md:w-auto px-8 py-4 bg-zinc-800 text-zinc-400 rounded-2xl font-semibold text-lg cursor-not-allowed"
+          >
+            Evidence Library (Coming Soon)
+          </button>
+
+          <button 
+            disabled
+            className="w-full md:w-auto px-8 py-4 bg-zinc-800 text-zinc-400 rounded-2xl font-semibold text-lg cursor-not-allowed"
+          >
+            Enter Courtroom (Coming Soon)
+          </button>
+        </div>
+      </div>
+
+      {/* 
+        ======================================================
+        SCENE RENDERING
+        Only one major scene should be active at a time.
+        ======================================================
+      */}
+
+      {/* Rivera Client Meeting Scene */}
       {showRiveraMeeting && (
         <RiveraClientMeeting 
           onComplete={handleRiveraComplete}
-          selectedLawyerGender="male" // or "female" based on player choice
+          selectedLawyerGender="male"   // Change to "female" based on player avatar selection
         />
       )}
+
+      {/* Future scenes will be added here using the same pattern */}
+      {/* {showEvidenceLibrary && <EvidenceLibrary />} */}
+      {/* {showCourtroom && <CourtroomScene />} */}
     </div>
   );
 };
