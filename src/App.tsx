@@ -4,7 +4,7 @@ import { Home, Users, Scale, BookOpen, User } from 'lucide-react'
 type Screen = 'home' | 'characters' | 'courtroom' | 'evidence' | 'case-studies' | 'profile'
 
 function App() {
-  const [currentScreen, setCurrentScreen] = useState<Screen>('home')
+  const [currentScreen, setCurrentScreen] = useState<Screen>('home') 
 
   const navItems = [
     { id: 'home' as Screen, label: 'Home', icon: Home },
