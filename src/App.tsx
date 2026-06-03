@@ -1,218 +1,41 @@
-import { useState } from 'react'
-import { Home, Users, Scale, BookOpen, User } from 'lucide-react'
+// Add these imports near the top of src/App.tsx
+import React, { useState } from 'react';
+import RiveraClientMeeting from './scenes/ClientMeeting/RiveraClientMeeting';
+import { useGameSave } from './hooks/useGameSave';
+import { awardReputation } from './game/gameEngine';
 
-type Screen = 'home' | 'characters' | 'courtroom' | 'evidence' | 'case-studies' | 'profile'
+// Example integration inside your main App component or Hub screen
+const App: React.FC = () => {
+  const [showRiveraMeeting, setShowRiveraMeeting] = useState(false);
+  const { saveGame, loadGame } = useGameSave();
 
-function App() {
-  const [currentScreen, setCurrentScreen] = useState<Screen>('home') 
-
-  const navItems = [
-    { id: 'home' as Screen, label: 'Home', icon: Home },
-    { id: 'characters' as Screen, label: 'Characters', icon: Users },
-    { id: 'courtroom' as Screen, label: 'Courtroom', icon: Scale },
-    { id: 'evidence' as Screen, label: 'Evidence', icon: BookOpen },
-    { id: 'case-studies' as Screen, label: 'Case Studies', icon: BookOpen },
-    { id: 'profile' as Screen, label: 'Profile', icon: User },
-  ]
+  const handleRiveraComplete = (strategy: 'suppression' | 'first_amendment' | 'dual', reputationGain: number) => {
+    awardReputation(reputationGain);
+    saveGame(); // Persist updated reputation and state
+    setShowRiveraMeeting(false);
+    // Navigate to next screen (e.g., Evidence Library or Courtroom)
+    console.log(`Strategy selected: ${strategy} | Reputation gained: ${reputationGain}`);
+  };
 
   return (
     <div className="min-h-screen bg-[#0a0f1c] text-white">
-      {/* Header */}
-      <header className="border-b border-slate-700 bg-[#0f1629] sticky top-0 z-50">
-        <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-semibold tracking-tight">Constitutional Defender</h1>
-            <p className="text-xs text-slate-400">Courtroom Simulation</p>
-          </div>
-          <div className="text-sm text-slate-400">Counselor • Tier 3</div>
-        </div>
-      </header>
+      {/* Your existing navigation / hub UI */}
+      <button 
+        onClick={() => setShowRiveraMeeting(true)}
+        className="px-6 py-3 bg-blue-600 hover:bg-blue-700 rounded-xl font-semibold transition"
+      >
+        Begin Client Meeting – State v. Rivera
+      </button>
 
-      {/* Main Content */}
-      <main className="max-w-6xl mx-auto px-6 py-8">
-        
-        {/* HOME SCREEN */}
-        {currentScreen === 'home' && (
-          <div>
-            <h2 className="text-3xl font-semibold mb-2">Welcome back, Counselor</h2>
-            <p className="text-slate-400 mb-8">Ready to defend the Constitution today?</p>
-            
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="bg-[#111827] border border-slate-700 rounded-2xl p-6">
-                <div className="text-blue-400 text-sm mb-1">CURRENT RANK</div>
-                <div className="text-2xl font-semibold">Senior Counsel</div>
-                <div className="text-emerald-400 mt-4">12,450 Reputation</div>
-              </div>
-              <div className="bg-[#111827] border border-slate-700 rounded-2xl p-6">
-                <div className="text-blue-400 text-sm mb-1">CASES WON</div>
-                <div className="text-4xl font-semibold">47</div>
-              </div>
-              <div className="bg-[#111827] border border-slate-700 rounded-2xl p-6">
-                <div className="text-blue-400 text-sm mb-1">NEXT GOAL</div>
-                <div className="text-lg">Lead Attorney</div>
-                <div className="text-xs text-slate-500 mt-1">7,550 reputation needed</div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* CHARACTERS SCREEN - With Images */}
-        {currentScreen === 'characters' && (
-          <div>
-            <h2 className="text-3xl font-semibold mb-2">Characters</h2>
-            <p className="text-slate-400 mb-8">Your team and the courtroom NPCs</p>
-
-            <div className="mb-10">
-              <h3 className="text-lg font-semibold mb-4 text-blue-400">Your Team</h3>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-                {[
-                  { name: "Elena Rodriguez", role: "Lead Counsel", image: "/characters/elena-rodriguez.jpg" },
-                  { name: "James Mitchell", role: "Junior Associate", image: "/characters/james-mitchell.jpg" },
-                  { name: "Marcus Williams", role: "Constitutional Expert", image: "/characters/marcus-williams.jpg" },
-                  { name: "Sarah Chen", role: "Trial Strategist", image: "/characters/sarah-chen.jpg" },
-                ].map((char, i) => (
-                  <div key={i} className="group bg-[#111827] border border-slate-700 rounded-2xl overflow-hidden hover:border-blue-500 hover:shadow-2xl transition-all duration-300 cursor-pointer">
-                    <img src={char.image} alt={char.name} className="w-full h-56 object-cover group-hover:scale-105 transition-transform duration-300" />
-                    <div className="p-5">
-                      <div className="font-semibold text-xl tracking-tight">{char.name}</div>
-                      <div className="inline-block mt-2 px-3 py-0.5 bg-blue-600/20 text-blue-400 text-xs font-medium rounded-full">
-                        {char.role}
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div>
-              <h3 className="text-lg font-semibold mb-4 text-amber-400">Courtroom NPCs</h3>
-              <div className="grid grid-cols-2 md:grid-cols-5 gap-6">
-                {[
-                  { name: "Judge Chen", role: "Presiding Judge", image: "/characters/judge-chen.jpg" },
-                  { name: "Prosecutor Stone", role: "Lead Prosecutor", image: "/characters/prosecutor-stone.jpg" },
-                  { name: "Clerk Williams", role: "Court Clerk", image: "/characters/clerk-williams.jpg" },
-                  { name: "Defendant Rivera", role: "The Accused", image: "/characters/defendant-rivera.jpg" },
-                  { name: "Mentor Richardson", role: "Senior Advisor", image: "/characters/mentor-richardson.jpg" },
-                ].map((npc, i) => (
-                  <div key={i} className="group bg-[#111827] border border-slate-700 rounded-2xl overflow-hidden hover:border-amber-500 hover:shadow-xl transition-all duration-300 cursor-pointer">
-                    <img src={npc.image} alt={npc.name} className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300" />
-                    <div className="p-4 text-center">
-                      <div className="font-semibold text-lg">{npc.name}</div>
-                      <div className="text-amber-400 text-sm mt-1">{npc.role}</div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* COURTROOM SCREEN */}
-        {currentScreen === 'courtroom' && (
-          <div>
-            <h2 className="text-3xl font-semibold mb-2">Courtroom</h2>
-            <p className="text-slate-400 mb-8">United States v. Rivera • Constitutional Defense</p>
-
-            <div className="bg-[#111827] border border-slate-700 rounded-2xl p-8 mb-8">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-center">
-                <div className="bg-[#0a0f1c] rounded-xl p-6">
-                  <div className="text-4xl mb-3">⚖️</div>
-                  <div className="font-semibold">Judge Chen</div>
-                  <div className="text-xs text-slate-400 mt-1">Presiding</div>
-                </div>
-                <div className="bg-[#0a0f1c] rounded-xl p-6">
-                  <div className="text-4xl mb-3">🔨</div>
-                  <div className="font-semibold">Prosecutor Stone</div>
-                  <div className="text-xs text-slate-400 mt-1">Opposing Counsel</div>
-                </div>
-                <div className="bg-[#0a0f1c] rounded-xl p-6">
-                  <div className="text-4xl mb-3">📋</div>
-                  <div className="font-semibold">Clerk Williams</div>
-                  <div className="text-xs text-slate-400 mt-1">Court Records</div>
-                </div>
-              </div>
-            </div>
-
-            <div className="text-center space-y-4">
-              <button 
-                onClick={() => alert('Full interactive courtroom with dialogue choices and voice narration coming in next update')}
-                className="bg-blue-600 hover:bg-blue-700 transition-colors px-10 py-4 rounded-2xl font-semibold text-lg w-full max-w-md"
-              >
-                Begin Trial
-              </button>
-              <p className="text-xs text-slate-500">Interactive trial simulation with branching dialogue</p>
-            </div>
-          </div>
-        )}
-
-        {/* EVIDENCE SCREEN */}
-        {currentScreen === 'evidence' && (
-          <div>
-            <h2 className="text-3xl font-semibold mb-6">Evidence Library</h2>
-            <p className="text-slate-400">Evidence collection and management system coming soon.</p>
-          </div>
-        )}
-
-        {/* CASE STUDIES SCREEN */}
-        {currentScreen === 'case-studies' && (
-          <div>
-            <h2 className="text-3xl font-semibold mb-2">Case Studies</h2>
-            <p className="text-slate-400 mb-8">Real incidents analyzed through a constitutional lens</p>
-
-            <div className="bg-[#111827] border border-slate-700 rounded-2xl p-8 mb-8">
-              <div className="max-w-3xl">
-                <h3 className="text-2xl font-semibold mb-4">Understanding Use of Force &amp; Constitutional Rights</h3>
-                <p className="text-slate-300 leading-relaxed mb-6">
-                  Real-world incidents provide powerful learning opportunities. By examining these cases, 
-                  we can better understand constitutional protections under the 4th, 5th, and 14th Amendments.
-                </p>
-                
-                <div className="bg-[#0a0f1c] border border-slate-600 rounded-xl p-6">
-                  <div className="text-amber-400 text-sm font-medium mb-2">FEATURED CASE</div>
-                  <h4 className="text-xl font-semibold mb-3">Parking Lot Incident – Use of Force Analysis</h4>
-                  <p className="text-slate-300 text-sm leading-relaxed">
-                    This case study examines a recorded interaction between law enforcement and a civilian. 
-                    Key constitutional questions include: Was the force used reasonable?
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* PROFILE SCREEN */}
-        {currentScreen === 'profile' && (
-          <div>
-            <h2 className="text-3xl font-semibold mb-6">Your Profile</h2>
-            <p className="text-slate-400">Reputation, achievements, and case history will appear here.</p>
-          </div>
-        )}
-
-      </main>
-
-      {/* Bottom Navigation */}
-      <nav className="fixed bottom-0 left-0 right-0 bg-[#0f1629] border-t border-slate-700">
-        <div className="max-w-6xl mx-auto flex justify-around py-3">
-          {navItems.map((item) => {
-            const Icon = item.icon
-            const isActive = currentScreen === item.id
-            return (
-              <button
-                key={item.id}
-                onClick={() => setCurrentScreen(item.id)}
-                className={`flex flex-col items-center px-4 py-1 text-xs transition-colors ${
-                  isActive ? 'text-blue-400' : 'text-slate-400 hover:text-slate-200'
-                }`}
-              >
-                <Icon size={20} className="mb-1" />
-                {item.label}
-              </button>
-            )
-          })}
-        </div>
-      </nav>
+      {/* Render the scene when triggered */}
+      {showRiveraMeeting && (
+        <RiveraClientMeeting 
+          onComplete={handleRiveraComplete}
+          selectedLawyerGender="male" // or "female" based on player choice
+        />
+      )}
     </div>
-  )
-}
+  );
+};
 
-export default App
+export default App;
