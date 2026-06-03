@@ -18,21 +18,29 @@ export function useGameSave() {
   const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
-    const saved = localStorage.getItem(SAVE_KEY);
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved) as PlayerState;
-        setPlayerState(parsed);
-      } catch (e) {
-        console.error("Failed to parse save data", e);
+    try {
+      const saved = localStorage.getItem(SAVE_KEY);
+
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed && typeof parsed === "object") {
+          setPlayerState({ ...DEFAULT_STATE, ...parsed });
+        }
       }
+    } catch (e) {
+      console.error("Save load failed:", e);
+    } finally {
+      setIsLoaded(true);
     }
-    setIsLoaded(true);
   }, []);
 
   useEffect(() => {
-    if (isLoaded) {
+    if (!isLoaded) return;
+
+    try {
       localStorage.setItem(SAVE_KEY, JSON.stringify(playerState));
+    } catch (e) {
+      console.error("Save write failed:", e);
     }
   }, [playerState, isLoaded]);
 
@@ -45,10 +53,5 @@ export function useGameSave() {
     setPlayerState(DEFAULT_STATE);
   };
 
-  return {
-    playerState,
-    updatePlayer,
-    resetGame,
-    isLoaded,
-  };
+  return { playerState, updatePlayer, resetGame, isLoaded };
 }
