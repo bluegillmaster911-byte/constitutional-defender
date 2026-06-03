@@ -56,7 +56,7 @@ function App() {
           </div>
         )}
 
-        {/* CHARACTERS SCREEN - Polished */}
+        {/* CHARACTERS SCREEN */}
         {currentScreen === 'characters' && (
           <div>
             <h2 className="text-3xl font-semibold mb-2">Characters</h2>
@@ -98,55 +98,4 @@ function App() {
                     <img src={npc.image} alt={npc.name} className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300" />
                     <div className="p-4 text-center">
                       <div className="font-semibold text-lg">{npc.name}</div>
-                      <div className="text-amber-400 text-sm mt-1">{npc.role}</div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* COURTROOM SCREEN */}
-        {currentScreen === 'courtroom' && (
-          <div>
-            <h2 className="text-3xl font-semibold mb-2">Courtroom</h2>
-            <p className="text-slate-400 mb-8">The heart of the simulation</p>
-
-            <div className="bg-[#111827] border border-slate-700 rounded-2xl p-8 mb-8">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-center">
-                <div className="bg-[#0a0f1c] rounded-xl p-6">
-                  <div className="text-4xl mb-3">⚖️</div>
-                  <div className="font-semibold">Judge Chen</div>
-                  <div className="text-xs text-slate-400 mt-1">Presiding</div>
-                </div>
-                <div className="bg-[#0a0f1c] rounded-xl p-6">
-                  <div className="text-4xl mb-3">🔨</div>
-                  <div className="font-semibold">Prosecutor Stone</div>
-                  <div className="text-xs text-slate-400 mt-1">Opposing Counsel</div>
-                </div>
-                <div className="bg-[#0a0f1c] rounded-xl p-6">
-                  <div className="text-4xl mb-3">📋</div>
-                  <div className="font-semibold">Clerk Williams</div>
-                  <div className="text-xs text-slate-400 mt-1">Court Records</div>
-                </div>
-              </div>
-            </div>
-
-            <div className="text-center">
-              <button 
-                onClick={() => alert('Full interactive courtroom coming in next major update')}
-                className="bg-blue-600 hover:bg-blue-700 transition-colors px-8 py-4 rounded-2xl font-semibold text-lg"
-              >
-                Enter Courtroom
-              </button>
-              <p className="text-xs text-slate-500 mt-3">Interactive trial simulation with voice narration</p>
-            </div>
-          </div>
-        )}
-
-        {/* EVIDENCE SCREEN */}
-        {currentScreen === 'evidence' && (
-          <div>
-            <h2 className="text-3xl font-semibold mb-6">Evidence Library</h2>
-            <p className="text-slate-
+                      <div className="text-amber-400 text-sm mt-1">{npc.role}</
