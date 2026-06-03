@@ -2,29 +2,48 @@ import { useState } from 'react';
 import { useGameSave } from './hooks/useGameSave';
 import { calculateVerdict, awardReputation, calculateTier } from './game/gameEngine';
 import type { VerdictResult } from './types/game';
-import { TIER_REQUIREMENTS } from './constants/game';
+import { TIER_REQUIREMENTS, STARTING_TIER } from './constants/game';
 
 function App() {
   const { playerState, updatePlayer, resetGame, isLoaded } = useGameSave();
+
   const [currentScore, setCurrentScore] = useState(75);
   const [evidenceUsed, setEvidenceUsed] = useState(3);
   const [correctObjections, setCorrectObjections] = useState(2);
   const [totalObjections, setTotalObjections] = useState(3);
   const [lastVerdict, setLastVerdict] = useState<VerdictResult | null>(null);
 
+  // 🔒 MUST block render BEFORE any unsafe access
   if (!isLoaded) {
-    return <div className="min-h-screen flex items-center justify-center">Loading save data...</div>;
+    return (
+      <div className="min-h-screen flex items-center justify-center text-white">
+        Loading save data...
+      </div>
+    );
   }
 
-  const tierInfo = TIER_REQUIREMENTS[playerState.tier];
-  const nextTier = playerState.tier < 6 ? TIER_REQUIREMENTS[(playerState.tier + 1) as keyof typeof TIER_REQUIREMENTS] : null;
+  // 🔒 safe tier lookup (prevents undefined crash)
+  const tierInfo =
+    TIER_REQUIREMENTS[playerState?.tier] ??
+    TIER_REQUIREMENTS[STARTING_TIER];
+
+  const nextTier =
+    playerState.tier < 6
+      ? TIER_REQUIREMENTS[(playerState.tier + 1) as keyof typeof TIER_REQUIREMENTS]
+      : null;
 
   const handleSimulateCase = () => {
+    // 🔒 input sanitization (prevents NaN / negative / invalid state crashes)
+    const safeScore = Math.max(0, Math.min(1, currentScore / 100));
+    const safeEvidence = Math.max(0, evidenceUsed);
+    const safeCorrect = Math.max(0, correctObjections);
+    const safeTotal = Math.max(1, totalObjections);
+
     const verdict = calculateVerdict(
-      currentScore / 100,
-      evidenceUsed,
-      correctObjections,
-      totalObjections
+      safeScore,
+      safeEvidence,
+      safeCorrect,
+      safeTotal
     );
 
     const updatedState = awardReputation(playerState, verdict.reputationGained);
@@ -51,14 +70,18 @@ function App() {
       <header className="border-b border-slate-700 bg-[#0f1629] sticky top-0 z-50">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
           <div>
-            <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight">Constitutional Defender</h1>
+            <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight">
+              Constitutional Defender
+            </h1>
             <p className="text-slate-400 text-xs sm:text-sm hidden sm:block">
               Legal Simulation & Constitutional Education Platform
             </p>
           </div>
           <div className="text-right">
             <div className="text-xs text-slate-400">Counselor</div>
-            <div className="font-medium text-sm sm:text-base">{playerState.name}</div>
+            <div className="font-medium text-sm sm:text-base">
+              {playerState?.name ?? "Counselor"}
+            </div>
           </div>
         </div>
       </header>
@@ -68,9 +91,14 @@ function App() {
         <div className="bg-[#111827] border border-slate-700 rounded-2xl p-5 sm:p-6 mb-6 sm:mb-8">
           <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-4">
             <div>
-              <div className="text-xs uppercase tracking-[2px] text-blue-400 mb-1">Current Rank</div>
-              <div className="text-3xl sm:text-4xl font-semibold leading-none">{tierInfo.name}</div>
+              <div className="text-xs uppercase tracking-[2px] text-blue-400 mb-1">
+                Current Rank
+              </div>
+              <div className="text-3xl sm:text-4xl font-semibold leading-none">
+                {tierInfo.name}
+              </div>
             </div>
+
             <div className="text-left sm:text-right">
               <div className="text-xs text-slate-400">Reputation</div>
               <div className="text-3xl sm:text-4xl font-mono text-emerald-400 tabular-nums">
@@ -81,7 +109,10 @@ function App() {
 
           <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm">
             <div>
-              Cases: <span className="font-mono text-blue-400">{playerState.casesCompleted}</span>
+              Cases:{' '}
+              <span className="font-mono text-blue-400">
+                {playerState.casesCompleted}
+              </span>
             </div>
             <div className="text-slate-600 hidden sm:inline">•</div>
             <div>Tier {playerState.tier} / 6</div>
@@ -89,7 +120,11 @@ function App() {
 
           {nextTier && (
             <div className="mt-3 text-xs text-slate-400">
-              Next promotion at <span className="font-mono">{nextTier.reputation.toLocaleString()}</span> reputation
+              Next promotion at{' '}
+              <span className="font-mono">
+                {nextTier.reputation.toLocaleString()}
+              </span>{' '}
+              reputation
             </div>
           )}
         </div>
@@ -99,9 +134,10 @@ function App() {
           <h2 className="text-xl font-semibold mb-5">Case Simulation</h2>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-            {/* Case Score */}
             <div className="sm:col-span-2 lg:col-span-1">
-              <label className="text-xs text-slate-400 block mb-2">Case Score</label>
+              <label className="text-xs text-slate-400 block mb-2">
+                Case Score
+              </label>
               <input
                 type="range"
                 min="0"
@@ -110,38 +146,49 @@ function App() {
                 onChange={(e) => setCurrentScore(Number(e.target.value))}
                 className="w-full accent-blue-500"
               />
-              <div className="text-center font-mono text-lg mt-1 text-blue-400">{currentScore}</div>
+              <div className="text-center font-mono text-lg mt-1 text-blue-400">
+                {currentScore}
+              </div>
             </div>
 
-            {/* Evidence Used */}
             <div>
-              <label className="text-xs text-slate-400 block mb-1.5">Evidence Used</label>
+              <label className="text-xs text-slate-400 block mb-1.5">
+                Evidence Used
+              </label>
               <input
                 type="number"
                 value={evidenceUsed}
-                onChange={(e) => setEvidenceUsed(Math.max(0, Number(e.target.value)))}
+                onChange={(e) =>
+                  setEvidenceUsed(Math.max(0, Number(e.target.value)))
+                }
                 className="bg-[#1f2937] border border-slate-600 rounded-xl px-4 py-3 w-full text-lg focus:outline-none focus:border-blue-500"
               />
             </div>
 
-            {/* Correct Objections */}
             <div>
-              <label className="text-xs text-slate-400 block mb-1.5">Correct Objections</label>
+              <label className="text-xs text-slate-400 block mb-1.5">
+                Correct Objections
+              </label>
               <input
                 type="number"
                 value={correctObjections}
-                onChange={(e) => setCorrectObjections(Math.max(0, Number(e.target.value)))}
+                onChange={(e) =>
+                  setCorrectObjections(Math.max(0, Number(e.target.value)))
+                }
                 className="bg-[#1f2937] border border-slate-600 rounded-xl px-4 py-3 w-full text-lg focus:outline-none focus:border-blue-500"
               />
             </div>
 
-            {/* Total Objections */}
             <div>
-              <label className="text-xs text-slate-400 block mb-1.5">Total Objections</label>
+              <label className="text-xs text-slate-400 block mb-1.5">
+                Total Objections
+              </label>
               <input
                 type="number"
                 value={totalObjections}
-                onChange={(e) => setTotalObjections(Math.max(1, Number(e.target.value)))}
+                onChange={(e) =>
+                  setTotalObjections(Math.max(1, Number(e.target.value)))
+                }
                 className="bg-[#1f2937] border border-slate-600 rounded-xl px-4 py-3 w-full text-lg focus:outline-none focus:border-blue-500"
               />
             </div>
@@ -158,27 +205,39 @@ function App() {
         {/* Verdict Result */}
         {lastVerdict && (
           <div className="bg-[#111827] border border-slate-700 rounded-2xl p-5 sm:p-6 mb-6 sm:mb-8">
-            <div className="uppercase tracking-[2px] text-xs text-blue-400 mb-2">Verdict</div>
+            <div className="uppercase tracking-[2px] text-xs text-blue-400 mb-2">
+              Verdict
+            </div>
             <div className="text-2xl sm:text-3xl font-semibold mb-3 capitalize">
               {lastVerdict.type.replace('_', ' ')}
             </div>
-            <p className="text-slate-300 mb-5 leading-relaxed">{lastVerdict.message}</p>
+            <p className="text-slate-300 mb-5 leading-relaxed">
+              {lastVerdict.message}
+            </p>
 
             <div className="flex flex-wrap gap-x-6 gap-y-2 text-sm">
               <div>
-                Score: <span className="font-mono text-blue-400">{lastVerdict.score}</span>
+                Score:{' '}
+                <span className="font-mono text-blue-400">
+                  {lastVerdict.score}
+                </span>
               </div>
               <div>
-                Reputation: <span className="font-mono text-emerald-400">+{lastVerdict.reputationGained}</span>
+                Reputation:{' '}
+                <span className="font-mono text-emerald-400">
+                  +{lastVerdict.reputationGained}
+                </span>
               </div>
               {lastVerdict.promoted && (
-                <div className="text-amber-400 font-medium flex items-center gap-1">★ PROMOTED TO NEW TIER</div>
+                <div className="text-amber-400 font-medium">
+                  ★ PROMOTED TO NEW TIER
+                </div>
               )}
             </div>
           </div>
         )}
 
-        {/* Footer Actions */}
+        {/* Footer */}
         <div className="flex flex-col sm:flex-row gap-3 items-center justify-between">
           <button
             onClick={handleReset}
