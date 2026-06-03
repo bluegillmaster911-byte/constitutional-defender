@@ -56,7 +56,7 @@ function App() {
           </div>
         )}
 
-        {/* CHARACTERS SCREEN */}
+        {/* CHARACTERS SCREEN - With Images */}
         {currentScreen === 'characters' && (
           <div>
             <h2 className="text-3xl font-semibold mb-2">Characters</h2>
@@ -107,7 +107,7 @@ function App() {
           </div>
         )}
 
-        {/* COURTROOM SCREEN - Improved */}
+        {/* COURTROOM SCREEN */}
         {currentScreen === 'courtroom' && (
           <div>
             <h2 className="text-3xl font-semibold mb-2">Courtroom</h2>
@@ -118,17 +118,17 @@ function App() {
                 <div className="bg-[#0a0f1c] rounded-xl p-6">
                   <div className="text-4xl mb-3">⚖️</div>
                   <div className="font-semibold">Judge Chen</div>
-                  <div className="text-xs text-slate-400 mt-1">Presiding Judge</div>
+                  <div className="text-xs text-slate-400 mt-1">Presiding</div>
                 </div>
                 <div className="bg-[#0a0f1c] rounded-xl p-6">
                   <div className="text-4xl mb-3">🔨</div>
                   <div className="font-semibold">Prosecutor Stone</div>
-                  <div className="text-xs text-slate-400 mt-1">Lead Prosecutor</div>
+                  <div className="text-xs text-slate-400 mt-1">Opposing Counsel</div>
                 </div>
                 <div className="bg-[#0a0f1c] rounded-xl p-6">
                   <div className="text-4xl mb-3">📋</div>
                   <div className="font-semibold">Clerk Williams</div>
-                  <div className="text-xs text-slate-400 mt-1">Court Clerk</div>
+                  <div className="text-xs text-slate-400 mt-1">Court Records</div>
                 </div>
               </div>
             </div>
