@@ -1,251 +1,232 @@
-import { useState } from 'react';
-import { useGameSave } from './hooks/useGameSave';
-import {
-  calculateVerdict,
-  awardReputation,
-  calculateTier,
-} from './game/gameEngine';
-import type { VerdictResult } from './types/game';
-import { TIER_REQUIREMENTS, STARTING_TIER } from './constants/game';
+import { useState } from 'react'
+import { Home, Users, Scale, BookOpen, User } from 'lucide-react'
+
+type Screen = 'home' | 'characters' | 'courtroom' | 'evidence' | 'case-studies' | 'profile'
 
 function App() {
-  const { playerState, updatePlayer, resetGame, isLoaded } = useGameSave();
+  const [currentScreen, setCurrentScreen] = useState<Screen>('home')
 
-  const [currentScore, setCurrentScore] = useState(75);
-  const [evidenceUsed, setEvidenceUsed] = useState(3);
-  const [correctObjections, setCorrectObjections] = useState(2);
-  const [totalObjections, setTotalObjections] = useState(3);
-  const [lastVerdict, setLastVerdict] = useState<VerdictResult | null>(null);
-  const [processing, setProcessing] = useState(false);
-
-  // 🔒 HARD GUARD (prevents blank screen / early crash)
-  if (!isLoaded) {
-    return (
-      <div className="min-h-screen flex items-center justify-center text-white">
-        Loading Constitutional Defender...
-      </div>
-    );
-  }
-
-  // 🔒 SAFE TIER RESOLVE (prevents undefined crash)
-  const tierInfo =
-    TIER_REQUIREMENTS[playerState?.tier] ??
-    TIER_REQUIREMENTS[STARTING_TIER];
-
-  const nextTier =
-    playerState.tier < 6
-      ? TIER_REQUIREMENTS[(playerState.tier + 1) as keyof typeof TIER_REQUIREMENTS]
-      : null;
-
-  const handleSimulateCase = () => {
-    setProcessing(true);
-
-    // 🔒 INPUT SANITIZATION (prevents NaN + instability)
-    const safeScore = Math.max(0, Math.min(1, currentScore / 100));
-    const safeEvidence = Math.max(0, evidenceUsed);
-    const safeCorrect = Math.max(0, correctObjections);
-    const safeTotal = Math.max(1, totalObjections);
-
-    const verdict = calculateVerdict(
-      safeScore,
-      safeEvidence,
-      safeCorrect,
-      safeTotal
-    );
-
-    const updatedState = awardReputation(
-      playerState,
-      verdict.reputationGained
-    );
-
-    const tierResult = calculateTier(
-      updatedState.reputation,
-      playerState.tier
-    );
-
-    const finalVerdict: VerdictResult = {
-      ...verdict,
-      newTier: tierResult.newTier,
-      promoted: tierResult.promoted,
-    };
-
-    updatePlayer(updatedState);
-
-    setTimeout(() => {
-      setLastVerdict(finalVerdict);
-      setProcessing(false);
-    }, 300);
-  };
-
-  const handleReset = () => {
-    resetGame();
-    setLastVerdict(null);
-  };
+  const navItems = [
+    { id: 'home' as Screen, label: 'Home', icon: Home },
+    { id: 'characters' as Screen, label: 'Characters', icon: Users },
+    { id: 'courtroom' as Screen, label: 'Courtroom', icon: Scale },
+    { id: 'evidence' as Screen, label: 'Evidence', icon: BookOpen },
+    { id: 'case-studies' as Screen, label: 'Case Studies', icon: BookOpen },
+    { id: 'profile' as Screen, label: 'Profile', icon: User },
+  ]
 
   return (
     <div className="min-h-screen bg-[#0a0f1c] text-white">
-      {/* HEADER */}
+      {/* Header */}
       <header className="border-b border-slate-700 bg-[#0f1629] sticky top-0 z-50">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
+        <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
           <div>
-            <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight">
-              Constitutional Defender
-            </h1>
-            <p className="text-slate-400 text-xs sm:text-sm hidden sm:block">
-              Legal Simulation & Constitutional Education Platform
-            </p>
+            <h1 className="text-2xl font-semibold tracking-tight">Constitutional Defender</h1>
+            <p className="text-xs text-slate-400">Courtroom Simulation</p>
           </div>
-          <div className="text-right">
-            <div className="text-xs text-slate-400">Counselor</div>
-            <div className="font-medium text-sm sm:text-base">
-              {playerState.name}
-            </div>
-          </div>
+          <div className="text-sm text-slate-400">Counselor • Tier 3</div>
         </div>
       </header>
 
-      <main className="max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
-
-        {/* PLAYER STATUS */}
-        <div className="bg-[#111827] border border-slate-700 rounded-2xl p-5 sm:p-6 mb-6 sm:mb-8">
-          <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-4">
-            <div>
-              <div className="text-xs uppercase tracking-[2px] text-blue-400 mb-1">
-                Current Rank
+      {/* Main Content */}
+      <main className="max-w-6xl mx-auto px-6 py-8">
+        {currentScreen === 'home' && (
+          <div>
+            <h2 className="text-3xl font-semibold mb-2">Welcome back, Counselor</h2>
+            <p className="text-slate-400 mb-8">Ready to defend the Constitution today?</p>
+            
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="bg-[#111827] border border-slate-700 rounded-2xl p-6">
+                <div className="text-blue-400 text-sm mb-1">CURRENT RANK</div>
+                <div className="text-2xl font-semibold">Senior Counsel</div>
+                <div className="text-emerald-400 mt-4">12,450 Reputation</div>
               </div>
-              <div className="text-3xl sm:text-4xl font-semibold">
-                {tierInfo.name}
+              <div className="bg-[#111827] border border-slate-700 rounded-2xl p-6">
+                <div className="text-blue-400 text-sm mb-1">CASES WON</div>
+                <div className="text-4xl font-semibold">47</div>
               </div>
-            </div>
-
-            <div className="text-left sm:text-right">
-              <div className="text-xs text-slate-400">Reputation</div>
-              <div className="text-3xl sm:text-4xl font-mono text-emerald-400">
-                {playerState.reputation.toLocaleString()}
+              <div className="bg-[#111827] border border-slate-700 rounded-2xl p-6">
+                <div className="text-blue-400 text-sm mb-1">NEXT GOAL</div>
+                <div className="text-lg">Lead Attorney</div>
+                <div className="text-xs text-slate-500 mt-1">7,550 reputation needed</div>
               </div>
-            </div>
-          </div>
-
-          <div className="flex gap-4 text-sm">
-            <div>
-              Cases:{' '}
-              <span className="text-blue-400 font-mono">
-                {playerState.casesCompleted}
-              </span>
-            </div>
-            <div>Tier {playerState.tier} / 6</div>
-          </div>
-
-          {nextTier && (
-            <div className="mt-3 text-xs text-slate-400">
-              Next promotion at{' '}
-              <span className="font-mono">
-                {nextTier.reputation.toLocaleString()}
-              </span>
-            </div>
-          )}
-        </div>
-
-        {/* SIMULATION */}
-        <div className="bg-[#111827] border border-slate-700 rounded-2xl p-5 sm:p-6 mb-6 sm:mb-8">
-          <h2 className="text-xl font-semibold mb-5">Case Simulation</h2>
-
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-6">
-
-            <div>
-              <label className="text-xs text-slate-400">Case Score</label>
-              <input
-                type="range"
-                min="0"
-                max="100"
-                value={currentScore}
-                onChange={(e) => setCurrentScore(Number(e.target.value))}
-                className="w-full accent-blue-500"
-              />
-              <div className="text-center text-blue-400 font-mono">
-                {currentScore}
-              </div>
-            </div>
-
-            <input
-              type="number"
-              value={evidenceUsed}
-              onChange={(e) => setEvidenceUsed(Number(e.target.value))}
-              className="bg-[#1f2937] p-3 rounded-xl"
-              placeholder="Evidence Used"
-            />
-
-            <input
-              type="number"
-              value={correctObjections}
-              onChange={(e) => setCorrectObjections(Number(e.target.value))}
-              className="bg-[#1f2937] p-3 rounded-xl"
-              placeholder="Correct Objections"
-            />
-
-            <input
-              type="number"
-              value={totalObjections}
-              onChange={(e) => setTotalObjections(Number(e.target.value))}
-              className="bg-[#1f2937] p-3 rounded-xl"
-              placeholder="Total Objections"
-            />
-          </div>
-
-          <button
-            onClick={handleSimulateCase}
-            className="w-full bg-blue-600 py-4 rounded-2xl font-semibold"
-          >
-            {processing ? 'Processing Case...' : 'Simulate Case Outcome'}
-          </button>
-        </div>
-
-        {/* VERDICT */}
-        {lastVerdict && (
-          <div className="bg-[#111827] border border-slate-700 rounded-2xl p-5 sm:p-6 mb-6 sm:mb-8">
-            <div className="text-blue-400 text-xs uppercase mb-2">
-              Verdict
-            </div>
-
-            <div className="text-2xl font-semibold mb-2">
-              {lastVerdict.type.replace('_', ' ')}
-            </div>
-
-            <p className="text-slate-300 mb-4">
-              {lastVerdict.message}
-            </p>
-
-            <div className="flex gap-6 text-sm">
-              <div>Score: {lastVerdict.score}</div>
-              <div className="text-emerald-400">
-                +{lastVerdict.reputationGained}
-              </div>
-              {lastVerdict.promoted && (
-                <div className="text-amber-400 font-bold">
-                  PROMOTED
-                </div>
-              )}
             </div>
           </div>
         )}
 
-        {/* RESET */}
-        <div className="flex justify-between items-center">
-          <button
-            onClick={handleReset}
-            className="border border-slate-600 px-5 py-3 rounded-xl"
-          >
-            Reset Progress
-          </button>
+        {currentScreen === 'characters' && (
+          <div>
+            <h2 className="text-3xl font-semibold mb-2">Characters</h2>
+            <p className="text-slate-400 mb-8">Your team and the courtroom NPCs</p>
 
-          <div className="text-xs text-slate-500">
-            Phase 1 • Stable Build
+            {/* Player Characters - Real Images */}
+            <div className="mb-10">
+              <h3 className="text-lg font-semibold mb-4 text-blue-400">Your Team</h3>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                {[
+                  { name: "Elena Rodriguez", role: "Lead Counsel", image: "/characters/elena-rodriguez.jpg" },
+                  { name: "James Mitchell", role: "Junior Associate", image: "/characters/james-mitchell.jpg" },
+                  { name: "Marcus Williams", role: "Constitutional Expert", image: "/characters/marcus-williams.jpg" },
+                  { name: "Sarah Chen", role: "Trial Strategist", image: "/characters/sarah-chen.jpg" },
+                ].map((char, i) => (
+                  <div 
+                    key={i} 
+                    className="group bg-[#111827] border border-slate-700 rounded-2xl overflow-hidden hover:border-blue-500 hover:shadow-xl transition-all duration-200 cursor-pointer"
+                  >
+                    <img 
+                      src={char.image} 
+                      alt={char.name}
+                      className="w-full h-56 object-cover"
+                    />
+                    <div className="p-5">
+                      <div className="font-semibold text-xl tracking-tight">{char.name}</div>
+                      <div className="inline-block mt-2 px-3 py-0.5 bg-blue-600/20 text-blue-400 text-xs font-medium rounded-full">
+                        {char.role}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Courtroom NPCs - Real Images */}
+            <div>
+              <h3 className="text-lg font-semibold mb-4 text-amber-400">Courtroom NPCs</h3>
+              <div className="grid grid-cols-2 md:grid-cols-5 gap-6">
+                {[
+                  { name: "Judge Chen", role: "Presiding Judge", image: "/characters/judge-chen.jpg" },
+                  { name: "Prosecutor Stone", role: "Lead Prosecutor", image: "/characters/prosecutor-stone.jpg" },
+                  { name: "Clerk Williams", role: "Court Clerk", image: "/characters/clerk-williams.jpg" },
+                  { name: "Defendant Rivera", role: "The Accused", image: "/characters/defendant-rivera.jpg" },
+                  { name: "Mentor Richardson", role: "Senior Advisor", image: "/characters/mentor-richardson.jpg" },
+                ].map((npc, i) => (
+                  <div key={i} className="group bg-[#111827] border border-slate-700 rounded-2xl overflow-hidden hover:border-amber-500 hover:shadow-lg transition-all duration-200 cursor-pointer">
+                    <img 
+                      src={npc.image} 
+                      alt={npc.name}
+                      className="w-full h-48 object-cover"
+                    />
+                    <div className="p-4 text-center">
+                      <div className="font-semibold text-lg">{npc.name}</div>
+                      <div className="text-amber-400 text-sm mt-1">{npc.role}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
-        </div>
+        )}
 
+        {currentScreen === 'courtroom' && (
+          <div>
+            <h2 className="text-3xl font-semibold mb-2">Courtroom</h2>
+            <p className="text-slate-400 mb-8">The heart of the simulation</p>
+
+            <div className="bg-[#111827] border border-slate-700 rounded-2xl p-8 mb-8">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-center">
+                <div className="bg-[#0a0f1c] rounded-xl p-6">
+                  <div className="text-4xl mb-3">⚖️</div>
+                  <div className="font-semibold">Judge Chen</div>
+                  <div className="text-xs text-slate-400 mt-1">Presiding</div>
+                </div>
+                <div className="bg-[#0a0f1c] rounded-xl p-6">
+                  <div className="text-4xl mb-3">🔨</div>
+                  <div className="font-semibold">Prosecutor Stone</div>
+                  <div className="text-xs text-slate-400 mt-1">Opposing Counsel</div>
+                </div>
+                <div className="bg-[#0a0f1c] rounded-xl p-6">
+                  <div className="text-4xl mb-3">📋</div>
+                  <div className="font-semibold">Clerk Williams</div>
+                  <div className="text-xs text-slate-400 mt-1">Court Records</div>
+                </div>
+              </div>
+            </div>
+
+            <div className="text-center">
+              <button 
+                onClick={() => alert('Courtroom simulation coming in next update!')}
+                className="bg-blue-600 hover:bg-blue-700 transition-colors px-8 py-4 rounded-2xl font-semibold text-lg"
+              >
+                Enter Courtroom
+              </button>
+              <p className="text-xs text-slate-500 mt-3">Full interactive courtroom experience coming soon</p>
+            </div>
+          </div>
+        )}
+
+        {currentScreen === 'evidence' && (
+          <div>
+            <h2 className="text-3xl font-semibold mb-6">Evidence Library</h2>
+            <p className="text-slate-400">Evidence collection and management system coming soon.</p>
+          </div>
+        )}
+
+        {currentScreen === 'case-studies' && (
+          <div>
+            <h2 className="text-3xl font-semibold mb-2">Case Studies</h2>
+            <p className="text-slate-400 mb-8">Real incidents analyzed through a constitutional lens</p>
+
+            <div className="bg-[#111827] border border-slate-700 rounded-2xl p-8 mb-8">
+              <div className="max-w-3xl">
+                <h3 className="text-2xl font-semibold mb-4">Understanding Use of Force &amp; Constitutional Rights</h3>
+                <p className="text-slate-300 leading-relaxed mb-6">
+                  Real-world incidents provide powerful learning opportunities. By examining these cases, 
+                  we can better understand constitutional protections under the 4th, 5th, and 14th Amendments, 
+                  the role of citizen recording, and the standards for reasonable force.
+                </p>
+                
+                <div className="bg-[#0a0f1c] border border-slate-600 rounded-xl p-6">
+                  <div className="text-amber-400 text-sm font-medium mb-2">FEATURED CASE</div>
+                  <h4 className="text-xl font-semibold mb-3">Parking Lot Incident – Use of Force Analysis</h4>
+                  <p className="text-slate-300 text-sm leading-relaxed">
+                    This case study examines a recorded interaction between law enforcement and a civilian. 
+                    Key constitutional questions include: Was the force used reasonable? What rights does a 
+                    citizen have when recording police activity? How do the 4th and 14th Amendments apply?
+                  </p>
+                  <div className="mt-4 text-xs text-slate-500">
+                    Educational use only • For discussion and constitutional analysis
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="text-center text-sm text-slate-500">
+              More case studies will be added as the library grows.
+            </div>
+          </div>
+        )}
+
+        {currentScreen === 'profile' && (
+          <div>
+            <h2 className="text-3xl font-semibold mb-6">Your Profile</h2>
+            <p className="text-slate-400">Reputation, achievements, and case history will appear here.</p>
+          </div>
+        )}
       </main>
+
+      {/* Bottom Navigation */}
+      <nav className="fixed bottom-0 left-0 right-0 bg-[#0f1629] border-t border-slate-700">
+        <div className="max-w-6xl mx-auto flex justify-around py-3">
+          {navItems.map((item) => {
+            const Icon = item.icon
+            const isActive = currentScreen === item.id
+            return (
+              <button
+                key={item.id}
+                onClick={() => setCurrentScreen(item.id)}
+                className={`flex flex-col items-center px-4 py-1 text-xs transition-colors ${
+                  isActive ? 'text-blue-400' : 'text-slate-400 hover:text-slate-200'
+                }`}
+              >
+                <Icon size={20} className="mb-1" />
+                {item.label}
+              </button>
+            )
+          })}
+        </div>
+      </nav>
     </div>
-  );
+  )
 }
 
-export default App;
+export default App
